@@ -1,0 +1,50 @@
+# Git attributes dla RCP System
+
+# Auto detect text files
+* text=auto
+
+# PHP
+*.php text eol=lf
+*.phtml text eol=lf
+
+# JavaScript
+*.js text eol=lf
+*.json text eol=lf
+
+# CSS
+*.css text eol=lf
+
+# HTML
+*.html text eol=lf
+
+# SQL
+*.sql text eol=lf
+
+# Shell scripts
+*.sh text eol=lf
+
+# Markdown
+*.md text eol=lf
+
+# Config files
+.gitignore text eol=lf
+.gitattributes text eol=lf
+.htaccess text eol=lf
+
+# Binary files
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.ico binary
+*.pdf binary
+*.zip binary
+*.mp4 binary
+*.webm binary
+
+# Font files
+*.ttf binary
+*.otf binary
+*.woff binary
+*.woff2 binary
+*.eot binary

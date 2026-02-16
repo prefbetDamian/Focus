@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <title>Ustaw PIN - Pierwsze logowanie</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Segoe UI', Tahoma, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+        .container {
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            max-width: 450px;
+            width: 100%;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+        }
+        h1 {
+            text-align: center;
+            color: #333;
+            margin-bottom: 30px;
+        }
+        .info {
+            background: #e7f3ff;
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 25px;
+            font-size: 14px;
+            line-height: 1.6;
+        }
+        .form-group {
+            margin-bottom: 20px;
+        }
+        label {
+            display: block;
+            color: #555;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+        input {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #ddd;
+            border-radius: 10px;
+            font-size: 16px;
+        }
+        input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+        .btn {
+            width: 100%;
+            padding: 15px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        .btn:hover { opacity: 0.9; }
+        .btn:disabled { opacity: 0.5; cursor: not-allowed; }
+        .btn-secondary {
+            margin-top: 10px;
+            background: #f0f0f0;
+            color: #333;
+        }
+        .message {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 10px;
+            display: none;
+        }
+        .message.error { background: #f8d7da; color: #721c24; display: block; }
+        .message.success { background: #d4edda; color: #155724; display: block; }
+        .back-link {
+            display: block;
+            text-align: center;
+            margin-top: 20px;
+            color: #667eea;
+            text-decoration: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔑 Ustaw PIN</h1>
+        
+        <div class="info">
+            <strong>Pierwsze logowanie/ Reset PIN/ Odepnij urządzenie:</strong><br>
+            Token otrzymałeś od administratora. Przy jego użyciu możesz skorzystać z opcji "Odepnij urządzenie od konta", możesz ponownie użyć tego samego tokena, aby ustawić PIN na nowym urządzeniu.
+        </div>
+
+        <form id="setPinForm">
+            <div class="form-group">
+                <label>Token (otrzymany od administratora)</label>
+                <input type="text" id="token" required placeholder="Token indywidualny" autocomplete="off">
+            </div>
+
+            <div class="form-group">
+                <label>Nowy PIN (4 cyfry)</label>
+                <input type="password" id="pin" required maxlength="4" pattern="[0-9]{4}" inputmode="numeric" placeholder="••••">
+            </div>
+
+            <button type="submit" class="btn">✅ Ustaw PIN</button>
+            <button type="button" id="resetDeviceBtn" class="btn btn-secondary">🔄 Odepnij urządzenie od konta</button>
+        </form>
+
+        <div class="message" id="message"></div>
+
+        <a href="index.html" class="back-link">← Powrót do logowania</a>
+    </div>
+
+    <script>
+        const form = document.getElementById('setPinForm');
+        const message = document.getElementById('message');
+        const resetDeviceBtn = document.getElementById('resetDeviceBtn');
+
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const token = document.getElementById('token').value.trim();
+            const pin = document.getElementById('pin').value;
+
+            if (pin.length !== 4 || !/^\d{4}$/.test(pin)) {
+                showMessage('PIN musi zawierać dokładnie 4 cyfry', 'error');
+                return;
+            }
+
+            if (!token) {
+                showMessage('Podaj token', 'error');
+                return;
+            }
+
+            // Próbuj najpierw jako pracownik
+            try {
+                const resEmployee = await fetch('set_pin.php', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ token, pin })
+                });
+
+                const dataEmployee = await resEmployee.json();
+
+                if (dataEmployee.success) {
+                    showMessage('✅ PIN ustawiony! Przekierowuję...', 'success');
+                    setTimeout(() => window.location.href = 'index.html', 2000);
+                    return;
+                }
+
+                // Jeśli pracownik nie zadziałał, spróbuj jako kierownik
+                const resManager = await fetch('panel/set_manager_pin.php', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ token, pin })
+                });
+
+                const dataManager = await resManager.json();
+
+                if (dataManager.success) {
+                    showMessage('✅ PIN ustawiony! Przekierowuję do panelu...', 'success');
+                    setTimeout(() => {
+                        // Jeśli manager zwrócił redirect, użyj go
+                        window.location.href = dataManager.redirect || 'panel/dashboard.php';
+                    }, 2000);
+                    return;
+                }
+
+                // Żaden nie zadziałał
+                showMessage('❌ Nieprawidłowy token', 'error');
+            } catch (err) {
+                showMessage('❌ Błąd połączenia z serwerem', 'error');
+            }
+        });
+
+        resetDeviceBtn.addEventListener('click', async () => {
+            const token = document.getElementById('token').value.trim();
+            const pin = document.getElementById('pin').value;
+
+            if (!token) {
+                showMessage('Podaj token', 'error');
+                return;
+            }
+
+            if (pin.length !== 4 || !/^\d{4}$/.test(pin)) {
+                showMessage('Podaj swój ustawiony PIN (4 cyfry)', 'error');
+                return;
+            }
+
+            try {
+                const res = await fetch('set_pin.php', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ token, pin, reset_device: true })
+                });
+
+                const data = await res.json();
+
+                if (data.success) {
+                    showMessage(data.message || '✅ Urządzenie odpięte. Możesz zalogować się z nowego urządzenia.', 'success');
+                    setTimeout(() => window.location.href = data.redirect || 'index.html', 2000);
+                    return;
+                }
+
+                showMessage(data.message || data.msg || '❌ Nie udało się odpiąć urządzenia', 'error');
+            } catch (err) {
+                showMessage('❌ Błąd połączenia z serwerem', 'error');
+            }
+        });
+
+        function showMessage(text, type) {
+            message.textContent = text;
+            message.className = 'message ' + type;
+        }
+    </script>
+</body>
+</html>

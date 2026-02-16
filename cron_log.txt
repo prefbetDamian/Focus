@@ -1,0 +1,4 @@
+[2026-02-12 14:47:16] [Scheduler] Push notifications: Sent 0 notifications to employees working >10h
+[2026-02-12 14:47:16] [Scheduler] Task 'push_notifications' completed successfully
+[2026-02-12 14:48:29] [Scheduler] Push notifications: Sent 0 notifications to employees working >10h
+[2026-02-12 14:48:29] [Scheduler] Task 'push_notifications' completed successfully

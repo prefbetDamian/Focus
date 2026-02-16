@@ -1,0 +1,16 @@
+# Disable directory listing
+Options -Indexes
+
+# Additional security headers
+<IfModule mod_headers.c>
+    Header set X-Frame-Options "DENY"
+    Header set X-Content-Type-Options "nosniff"
+    Header set X-XSS-Protection "1; mode=block"
+    Header set Referrer-Policy "no-referrer"
+</IfModule>
+
+# Protect config and log files
+<FilesMatch "\.(log|config\.php)$">
+    Order Allow,Deny
+    Deny from all
+</FilesMatch>

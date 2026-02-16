@@ -1,0 +1,16 @@
+{
+    "name": "prefbet/rcp",
+    "description": "RCP - Rejestr Czasu Pracy",
+    "type": "project",
+    "require": {
+        "php": ">=7.4",
+        "phpmailer/phpmailer": "^6.8",
+        "minishlink/web-push": "^9.0"
+    },
+    "autoload": {
+        "files": [
+            "core/db.php",
+            "core/email.php"
+        ]
+    }
+}

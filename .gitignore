@@ -1,0 +1,84 @@
+# ============================================
+# WRAŻLIWE PLIKI KONFIGURACYJNE
+# ============================================
+config.php
+email_config.php
+admin/admin_config.php
+push_config.php
+.env
+*.key
+*.pem
+
+# ============================================
+# LOGI I DANE UŻYTKOWNIKÓW
+# ============================================
+/logs
+*.log
+admin/admin_access.log
+error_log
+
+# ============================================
+# CACHE I PLIKI TYMCZASOWE
+# ============================================
+/cache
+/tmp
+*.tmp
+*.cache
+
+# ============================================
+# UPLOADS / PLIKI UŻYTKOWNIKÓW
+# ============================================
+/uploads
+uploads/wz/*.jpg
+uploads/wz/*.jpeg
+uploads/wz/*.png
+uploads/wz/*.pdf
+
+# ============================================
+# GENEROWANE PLIKI
+# ============================================
+*.pdf
+*.xlsx
+*.csv
+
+# ============================================
+# PLIKI TESTOWE
+# ============================================
+test_*.php
+debug_*.php
+_test.php
+_debug.php
+
+# ============================================
+# IDE / EDYTOR
+# ============================================
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+Thumbs.db
+
+# ============================================
+# NODE / COMPOSER (jeśli używane)
+# ============================================
+/node_modules
+/vendor
+composer.lock
+package-lock.json
+
+# ============================================
+# BACKUP
+# ============================================
+*.bak
+*.backup
+*.sql
+backup/
+
+# ============================================
+# DOKUMENTY SPECYFICZNE DLA PROJEKTU
+# ============================================
+ZMIEN_HASLO.md
+TODO.md
+NOTES.md

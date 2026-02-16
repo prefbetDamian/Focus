@@ -1,0 +1,20 @@
+# Deny access to scheduler internals and sensitive files
+<FilesMatch "(scheduler_status\.php|clear_scheduler_locks\.php|cron_log\.txt)$">
+    # Dostęp tylko dla administratorów z IP
+    # Odkomentuj i dodaj swoje IP dla bezpieczeństwa:
+    # Require ip 127.0.0.1
+    # Require ip YOUR_ADMIN_IP
+    
+    # Lub zostaw otwarte dla monitorowania (mniej bezpieczne)
+    Require all granted
+</FilesMatch>
+
+# Chroń katalog locks
+<Directory "cron/locks">
+    Require all denied
+</Directory>
+
+# Chroń pliki konfiguracyjne
+<FilesMatch "(config\.php|email_config\.php|admin_config\.php|push_config\.php)$">
+    Require all denied
+</FilesMatch>

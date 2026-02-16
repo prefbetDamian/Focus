@@ -1,0 +1,468 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <title>Rejestr czasu pracy - Logowanie</title>
+
+    <link rel="icon" href="favicon.ico" type="image/x-icon">
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#007bff">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Czas Pracy">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+
+    <!-- Start cookieyes banner -->
+    <script id="cookieyes" type="text/javascript" src="https://cdn-cookieyes.com/client_data/e92bece0208677a702d2ea8caa7c1e00/script.js"></script>
+    <!-- End cookieyes banner -->
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Arial, sans-serif;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow-x: hidden;
+            overflow-y: auto;
+            padding: 20px 10px;
+        }
+
+        .bg-video {
+            position: fixed;
+            inset: 0;
+            width: 100vw;
+            height: 100vh;
+            object-fit: cover;
+            z-index: -2;
+        }
+
+        .video-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.7);
+            z-index: -1;
+        }
+
+        .container {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            padding: 50px 40px;
+            max-width: 420px;
+            width: 100%;
+            border-radius: 25px;
+            box-shadow: 0 15px 50px rgba(0, 0, 0, 0.4);
+            text-align: center;
+        }
+
+        .logo {
+            max-width: 250px;
+            margin-bottom: 25px;
+        }
+
+        h1 {
+            color: #333;
+            font-size: 28px;
+            margin-bottom: 30px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+            text-align: left;
+        }
+
+        label {
+            display: block;
+            color: #333;
+            font-size: 16px;
+            margin-bottom: 10px;
+            font-weight: 700;
+        }
+
+        input[type="text"] {
+            width: 100%;
+            padding: 18px;
+            font-size: 18px;
+            font-weight: 600;
+            border: 3px solid #007bff;
+            border-radius: 12px;
+            transition: all 0.3s ease;
+            background: white;
+        }
+
+        input[type="text"]:focus {
+            outline: none;
+            border-color: #0056b3;
+            box-shadow: 0 0 0 4px rgba(0, 123, 255, 0.3);
+            transform: scale(1.02);
+        }
+
+        .pin-label {
+            text-align: center;
+            margin-bottom: 15px;
+        }
+
+        .pin-label label {
+            font-size: 18px;
+            color: #007bff;
+            font-weight: 700;
+        }
+
+        .pin-box {
+            display: flex;
+            justify-content: center;
+            gap: 12px;
+            margin-bottom: 25px;
+        }
+
+        .pin-input {
+            width: 70px;
+            height: 70px;
+            font-size: 32px;
+            font-weight: bold;
+            text-align: center;
+            border: 3px solid #007bff;
+            border-radius: 15px;
+            transition: all 0.3s ease;
+            background: white;
+        }
+
+        .pin-input:focus {
+            outline: none;
+            border-color: #0056b3;
+            box-shadow: 0 0 0 5px rgba(0, 123, 255, 0.3);
+            transform: scale(1.1);
+        }
+
+        .btn-login {
+            width: 100%;
+            padding: 16px;
+            font-size: 18px;
+            font-weight: 600;
+            color: white;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border: none;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-top: 10px;
+        }
+
+        .btn-login:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-login:active {
+            transform: translateY(0);
+        }
+
+        .btn-login:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        .message {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 10px;
+            font-size: 14px;
+            display: none;
+        }
+
+        .message.error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+            display: block;
+        }
+
+        .message.info {
+            background: #d1ecf1;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
+            display: block;
+        }
+
+        .footer {
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 1px solid rgba(0, 0, 0, 0.1);
+        }
+
+        .footer-link {
+            display: inline-block;
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            color: white;
+            text-decoration: none;
+            font-size: 16px;
+            font-weight: 700;
+            padding: 14px 28px;
+            border-radius: 12px;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(245, 87, 108, 0.3);
+        }
+
+        .footer-link:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(245, 87, 108, 0.5);
+            text-decoration: none;
+        }
+
+        .created-by {
+            margin-top: 25px;
+            padding-top: 15px;
+            border-top: 1px solid rgba(0, 0, 0, 0.08);
+            font-size: 12px;
+            color: #888;
+            font-style: italic;
+        }
+
+        .created-by strong {
+            color: #667eea;
+            font-style: normal;
+        }
+
+        /* Honeypot - ukryte pole antyspamowe */
+        .honeypot {
+            position: absolute;
+            left: -9999px;
+            opacity: 0;
+        }
+
+        @media (max-width: 768px) {
+            body {
+                align-items: flex-start;
+                padding: 10px 6px;
+            }
+
+            .container {
+                max-width: 100%;
+                padding: 30px 20px;
+                border-radius: 18px;
+                box-shadow: 0 10px 30px rgba(0, 0, 0, 0.35);
+            }
+
+            h1 {
+                font-size: 24px;
+            }
+
+            input[type="text"] {
+                font-size: 16px;
+                padding: 16px;
+            }
+
+            .pin-input {
+                width: 60px;
+                height: 60px;
+                font-size: 28px;
+            }
+
+            .footer-link {
+                font-size: 14px;
+                padding: 12px 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <video class="bg-video" autoplay loop muted playsinline>
+        <source src="background.mp4" type="video/mp4">
+    </video>
+    <div class="video-overlay"></div>
+
+    <div class="container">
+        <img src="Logo.png" alt="Logo" class="logo">
+        
+        <form id="loginForm">
+            <!-- Honeypot (antybot) -->
+            <input type="text" name="honeypot" class="honeypot" tabindex="-1" autocomplete="off">
+
+            <div id="employeeFields">
+                <div class="form-group">
+                    <label for="firstName">Imię</label>
+                    <input type="text" id="firstName" autocomplete="given-name">
+                </div>
+
+                <div class="form-group">
+                    <label for="lastName">Nazwisko</label>
+                    <input type="text" id="lastName" autocomplete="family-name">
+                </div>
+            </div>
+
+            <div class="pin-label">
+                <label>PIN (4 cyfry)</label>
+            </div>
+
+            <div class="pin-box">
+                <input type="password" class="pin-input" maxlength="1" pattern="[0-9]" inputmode="numeric" required>
+                <input type="password" class="pin-input" maxlength="1" pattern="[0-9]" inputmode="numeric" required>
+                <input type="password" class="pin-input" maxlength="1" pattern="[0-9]" inputmode="numeric" required>
+                <input type="password" class="pin-input" maxlength="1" pattern="[0-9]" inputmode="numeric" required>
+            </div>
+
+            <button type="submit" class="btn-login" id="btnLogin">
+                🔐 Zaloguj się
+            </button>
+        </form>
+
+        <div class="message" id="message"></div>
+
+        <div class="footer">
+            <a href="set_pin.html" class="footer-link">📝 Resetuj PIN</a>
+            
+            <div class="created-by">
+                Created by <strong>Pref-Bet</strong> © 2026
+            </div>
+        </div>
+    </div>
+    <script>
+        // Device ID (fingerprint urządzenia)
+        const deviceId = localStorage.getItem('device_id') || 
+            'web_' + Math.random().toString(36).substr(2, 9) + '_' + Date.now();
+        localStorage.setItem('device_id', deviceId);
+
+        // Pola formularza
+        const firstName = document.getElementById('firstName');
+        const lastName = document.getElementById('lastName');
+        const pinInputs = document.querySelectorAll('.pin-input');
+        const form = document.getElementById('loginForm');
+        const btnLogin = document.getElementById('btnLogin');
+        const message = document.getElementById('message');
+
+        // Automatyczne przełączanie między polami PIN
+        pinInputs.forEach((input, index) => {
+            input.addEventListener('input', (e) => {
+                if (e.target.value && index < pinInputs.length - 1) {
+                    pinInputs[index + 1].focus();
+                }
+                
+                // Auto-submit gdy 4 cyfry
+                if (index === 3 && e.target.value) {
+                    form.requestSubmit();
+                }
+            });
+
+            input.addEventListener('keydown', (e) => {
+                if (e.key === 'Backspace' && !e.target.value && index > 0) {
+                    pinInputs[index - 1].focus();
+                }
+            });
+
+            // Tylko cyfry
+            input.addEventListener('keypress', (e) => {
+                if (!/[0-9]/.test(e.key)) {
+                    e.preventDefault();
+                }
+            });
+        });
+
+        // Obsługa formularza
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            await handleLogin();
+        });
+
+        async function handleLogin() {
+            const pin = Array.from(pinInputs).map(i => i.value).join('');
+
+            if (pin.length !== 4) {
+                showMessage('Wprowadź 4-cyfrowy PIN', 'error');
+                return;
+            }
+
+            // Wymagane imię i nazwisko
+            if (!firstName.value.trim() || !lastName.value.trim()) {
+                showMessage('Podaj imię i nazwisko', 'error');
+                return;
+            }
+
+            btnLogin.disabled = true;
+            btnLogin.textContent = '⏳ Logowanie...';
+
+            try {
+                // NIE wysyłamy login_type - backend sprawdzi obie tabele
+                const response = await fetch('login_universal.php', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        firstName: firstName.value.trim(),
+                        lastName: lastName.value.trim(),
+                        pin: pin,
+                        device_id: deviceId
+                    })
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    if (data.first_login) {
+                        // Przekieruj do ustawiania PIN (token)
+                        showMessage('✅ Token rozpoznany! Ustaw swój PIN...', 'success');
+                        setTimeout(() => {
+                            window.location.href = 'set_pin.html?token=' + encodeURIComponent(data.token);
+                        }, 1000);
+                    } else {
+                        showMessage('✅ Zalogowano!', 'success');
+                        setTimeout(() => {
+                            window.location.href = data.redirect || 'panel.php';
+                        }, 500);
+                    }
+                } else {
+                    showMessage('❌ ' + (data.message || 'Błąd logowania'), 'error');
+                    btnLogin.disabled = false;
+                    btnLogin.textContent = '🔐 Zaloguj się';
+                    
+                    // Wyczyść PIN
+                    pinInputs.forEach(input => input.value = '');
+                    pinInputs[0].focus();
+                }
+            } catch (error) {
+                showMessage('❌ Błąd połączenia', 'error');
+                btnLogin.disabled = false;
+                btnLogin.textContent = '🔐 Zaloguj się';
+                
+                // Wyczyść PIN
+                pinInputs.forEach(input => input.value = '');
+                pinInputs[0].focus();
+            }
+        }
+
+        function showMessage(text, type) {
+            message.textContent = text;
+            message.className = 'message ' + type;
+        }
+
+        // Focus na pierwszym polu przy załadowaniu
+        window.addEventListener('load', () => {
+            firstName.focus();
+        });
+
+        // Rejestracja Service Worker (PWA)
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('service-worker.js')
+                .then(reg => {
+                    console.log('SW registered successfully');
+                    // Uruchom wewnętrzny scheduler
+                    if (reg.active) {
+                        reg.active.postMessage({ type: 'START_SCHEDULER' });
+                    }
+                    // Jeśli SW się dopiero instaluje
+                    navigator.serviceWorker.ready.then(registration => {
+                        if (registration.active) {
+                            registration.active.postMessage({ type: 'START_SCHEDULER' });
+                        }
+                    });
+                })
+                .catch(err => console.log('SW registration failed:', err));
+        }
+    </script>
+</body>
+</html>
