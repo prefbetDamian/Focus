@@ -1,12 +1,10 @@
 <?php
 /**
  * Funkcje wysyłania emaili przez SMTP z użyciem PHPMailer
+ * Jeśli PHPMailer nie jest zainstalowany, funkcje nie będą dostępne
  */
 
-use PHPMailer\PHPMailer\PHPMailer;
-use PHPMailer\PHPMailer\Exception;
-
-// Obsługa różnych struktur folderów (lokalne vs hosting)
+// Sprawdź czy PHPMailer jest zainstalowany
 $phpmailerPath = __DIR__ . '/../vendor/phpmailer/phpmailer/src';
 if (!is_dir($phpmailerPath)) {
     // Próbuj różnych wariantów nazw (duże/małe litery)
@@ -23,6 +21,15 @@ if (!is_dir($phpmailerPath)) {
         }
     }
 }
+
+// Jeśli vendor/ nie istnieje, zakończ - API użyje funkcji zastępczych
+if (!is_dir($phpmailerPath)) {
+    error_log("PHPMailer not installed at: $phpmailerPath - email functions disabled");
+    return; // Wyjście z pliku bez definiowania funkcji
+}
+
+use PHPMailer\PHPMailer\PHPMailer;
+use PHPMailer\PHPMailer\Exception;
 
 require_once $phpmailerPath . '/Exception.php';
 require_once $phpmailerPath . '/PHPMailer.php';

@@ -13,8 +13,31 @@ ini_set('log_errors', 1);
 
 try {
     $pdo = require_once __DIR__ . '/core/db.php';
-    require_once __DIR__ . '/core/email.php';
-    require_once __DIR__ . '/core/push.php';
+    
+    // Opcjonalnie załaduj email i push - użyj include zamiast require!
+    // include zwróci FALSE jeśli vendor/ nie istnieje, ale nie wywoła Fatal Error
+    @include_once __DIR__ . '/core/email.php';
+    @include_once __DIR__ . '/core/push.php';
+    
+    // Funkcje zastępcze jeśli moduły nie są załadowane
+    if (!function_exists('sendEmail')) {
+        function sendEmail($to, $subject, $body) {
+            error_log("Email would be sent to: $to | Subject: $subject");
+            return true;
+        }
+    }
+    if (!function_exists('sendPushToManager')) {
+        function sendPushToManager($pdo, $managerId, $title, $body, $url = null) {
+            error_log("Push to manager $managerId: $title");
+            return true;
+        }
+    }
+    if (!function_exists('sendPushToEmployee')) {
+        function sendPushToEmployee($pdo, $employeeId, $title, $body, $url = null) {
+            error_log("Push to employee $employeeId: $title");
+            return true;
+        }
+    }
 
     // Informacje o zalogowanym użytkowniku
     $isEmployee = isset($_SESSION['employee']) || isset($_SESSION['user_id']);
@@ -473,13 +496,16 @@ try {
         case 'count_pending':
             // Licznik oczekujących wniosków dla kierownika
             if (!isset($_SESSION['manager']) && !isset($_SESSION['manager_id'])) {
-                throw new Exception('Brak uprawnień');
+                echo json_encode(['success' => false, 'message' => 'Brak uprawnień - nie jesteś zalogowany jako manager']);
+                exit;
             }
 
             $roleLevel = is_array($_SESSION['manager'] ?? null)
                 ? (int)($_SESSION['manager']['role_level'] ?? 0)
                 : (int)($_SESSION['role_level'] ?? 0);
-            $managerId = $_SESSION['manager']['id'] ?? $_SESSION['manager_id'] ?? null;
+            $managerId = is_array($_SESSION['manager'] ?? null)
+                ? ($_SESSION['manager']['id'] ?? null)
+                : ($_SESSION['manager_id'] ?? null);
 
             if ($roleLevel >= 4) {
                 // Kadry / admin – wszystkie wnioski
@@ -488,11 +514,17 @@ try {
 
                 echo json_encode([
                     'success' => true,
-                    'count'   => (int)$result['count'],
+                    'count'   => (int)($result['count'] ?? 0),
                 ]);
             } elseif ($roleLevel === 2 && $managerId) {
                 // Kierownik (rola 2) – tylko wnioski jego pracowników
-                $stmt = $pdo->prepare("\n                    SELECT COUNT(*) AS count\n                    FROM absence_requests ar\n                    JOIN employees e ON ar.employee_id = e.id\n                    WHERE ar.status = 'pending'\n                      AND e.manager_id = ?\n                ");
+                $stmt = $pdo->prepare("
+                    SELECT COUNT(*) AS count
+                    FROM absence_requests ar
+                    JOIN employees e ON ar.employee_id = e.id
+                    WHERE ar.status = 'pending'
+                      AND e.manager_id = ?
+                ");
                 $stmt->execute([$managerId]);
                 $result = $stmt->fetch(PDO::FETCH_ASSOC);
 
@@ -501,7 +533,14 @@ try {
                     'count'   => (int)($result['count'] ?? 0),
                 ]);
             } else {
-                throw new Exception('Brak uprawnień');
+                echo json_encode([
+                    'success' => false,
+                    'message' => 'Brak uprawnień dla role_level: ' . $roleLevel,
+                    'debug' => [
+                        'roleLevel' => $roleLevel,
+                        'managerId' => $managerId
+                    ]
+                ]);
             }
             break;
 

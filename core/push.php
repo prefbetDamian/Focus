@@ -1,10 +1,17 @@
 <?php
 declare(strict_types=1);
 
+// Sprawdź czy vendor/autoload.php istnieje
+$autoloadPath = __DIR__ . '/../vendor/autoload.php';
+if (!file_exists($autoloadPath)) {
+    error_log("Web Push library not installed - push functions disabled");
+    return; // Wyjście z pliku bez definiowania funkcji
+}
+
 use Minishlink\WebPush\WebPush;
 use Minishlink\WebPush\Subscription;
 
-require_once __DIR__ . '/../vendor/autoload.php';
+require_once $autoloadPath;
 
 // Walidacja wstępna - sprawdź czy push_config.php istnieje i ma podstawowe dane
 $pushConfigCheck = require __DIR__ . '/../push_config.php';
